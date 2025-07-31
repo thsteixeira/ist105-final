@@ -1,0 +1,13 @@
+{% extends 'smartravelapp/base.html' %}
+
+{% block content %}
+    <h2>Travel Form</h2>
+    <form method="post">
+        {% csrf_token %}
+        {{ form.as_p }}
+        <button type="submit">Submit</button>
+    </form>
+
+    <br>
+    <a href="{% url 'travel_history' %}">View Travel History</a>
+{% endblock %}

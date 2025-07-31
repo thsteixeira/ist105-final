@@ -1,0 +1,15 @@
+{% extends 'smartravelapp/base.html' %}
+
+{% block content %}
+    <h2>Travel Results</h2>
+    <ul>
+        {% for key, value in messages.items %}
+            <li><strong>{{ key|capfirst }}:</strong> {{ value }}</li>
+        {% endfor %}
+    </ul>
+
+    <br>
+    <a href="{% url 'travel_form' %}">Back to Travel Form</a>
+    <br>
+    <a href="{% url 'travel_history' %}">View Travel History</a>
+{% endblock %}
