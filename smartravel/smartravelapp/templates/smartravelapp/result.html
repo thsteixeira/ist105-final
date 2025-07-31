@@ -2,9 +2,20 @@
 
 {% block content %}
     <h2>Travel Results</h2>
+    
+    <!-- Travel Recommendation Section -->
+    {% if messages.recommendation %}
+        <h3>Travel Recommendation:</h3>
+        <p><strong>{{ messages.recommendation }}</strong></p>
+    {% endif %}
+    
+    <!-- Other Travel Information -->
+    <h3>Trip Details:</h3>
     <ul>
         {% for key, value in messages.items %}
-            <li><strong>{{ key|capfirst }}:</strong> {{ value }}</li>
+            {% if key != 'recommendation' %}
+                <li><strong>{{ key|capfirst }}:</strong> {{ value }}</li>
+            {% endif %}
         {% endfor %}
     </ul>
 

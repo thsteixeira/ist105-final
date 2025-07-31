@@ -3,6 +3,7 @@ from django.contrib import messages
 import requests
 import logging
 import json
+import datetime
 
 from .forms import TravelHistoryForm
 from .models import TravelHistory
@@ -138,6 +139,67 @@ def format_directions_data(directions_data):
     
     return str(directions_data)
 
+def get_travel_recommendation(start_weather, destination_weather):
+    """
+    Analyze weather and time to provide travel recommendations
+    """
+    current_time = datetime.datetime.now()
+    current_hour = current_time.hour
+    
+    # Parse weather data if needed
+    if isinstance(start_weather, str):
+        start_weather = parse_stored_data(start_weather)
+    if isinstance(destination_weather, str):
+        destination_weather = parse_stored_data(destination_weather)
+    
+    # Check for weather errors first
+    if (isinstance(start_weather, dict) and 'error' in start_weather) or \
+       (isinstance(destination_weather, dict) and 'error' in destination_weather):
+        return "Unable to get weather data for travel recommendation."
+    
+    # Extract weather conditions
+    start_condition = ""
+    dest_condition = ""
+    start_temp = 0
+    dest_temp = 0
+    
+    if isinstance(start_weather, dict) and 'weather' in start_weather:
+        start_condition = start_weather['weather'][0]['main'].lower()
+        start_temp = start_weather.get('main', {}).get('temp', 0)
+    
+    if isinstance(destination_weather, dict) and 'weather' in destination_weather:
+        dest_condition = destination_weather['weather'][0]['main'].lower()
+        dest_temp = destination_weather.get('main', {}).get('temp', 0)
+    
+    # Bad weather conditions
+    bad_weather_conditions = ['rain', 'snow', 'thunderstorm', 'drizzle']
+    
+    # Time-based recommendations
+    if current_hour < 6 or current_hour > 22:
+        return "Consider delaying your trip - it's very late/early for travel."
+    elif current_hour >= 6 and current_hour <= 9:
+        time_message = "Good morning travel time!"
+    elif current_hour >= 10 and current_hour <= 16:
+        time_message = "Perfect daytime travel hours!"
+    elif current_hour >= 17 and current_hour <= 20:
+        time_message = "Good evening travel time!"
+    else:
+        time_message = "Acceptable travel time."
+    
+    # Weather-based recommendations using if/elif/else
+    if start_condition in bad_weather_conditions and dest_condition in bad_weather_conditions:
+        return "Consider delaying your trip due to bad weather at both locations."
+    elif start_condition in bad_weather_conditions:
+        return "Consider delaying your trip due to bad weather at your starting location."
+    elif dest_condition in bad_weather_conditions:
+        return "Consider delaying your trip due to bad weather at your destination."
+    elif start_temp < -10 or dest_temp < -10:
+        return "Consider delaying your trip due to extremely cold temperatures."
+    elif start_temp > 35 or dest_temp > 35:
+        return "Consider delaying your trip due to extremely hot temperatures - travel early morning or evening."
+    else:
+        return f"Good time to start your trip! {time_message}"
+
 def travel_form_view(request):
     """
     View to handle the travel form with API-fetched locations
@@ -158,13 +220,17 @@ def travel_form_view(request):
             # Get directions
             directions = get_directions_between_locations(start_city, destination_city)
             
+            # Get travel recommendation based on weather and time
+            travel_recommendation = get_travel_recommendation(start_weather, destination_weather)
+            
             # Format data for display
             messages = {
                 'start': start_city,
                 'destination': destination_city,
                 'start_weather': format_weather_data(start_weather),
                 'destination_weather': format_weather_data(destination_weather),
-                'directions': format_directions_data(directions)
+                'directions': format_directions_data(directions),
+                'recommendation': travel_recommendation
             }
             
             # Save to database

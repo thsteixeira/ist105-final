@@ -74,24 +74,24 @@ WSGI_APPLICATION = 'smartravel.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/3.1/ref/settings/#databases
 
-DATABASES = {
+""" DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.sqlite3',
         'NAME': BASE_DIR / 'db.sqlite3',
     }
-}
+} """
 
-"""
+
 DATABASES = {
     'default': {
         'ENGINE': 'djongo',
         'NAME': 'cctbdb',
         'CLIENT': {
-            'host': 'mongodb://cctb:cctb2025@<MONGO_EC2_PUBLIC_IP>:27017/cctbdb?authSource=cctbdb',
+            'host': 'mongodb://cctb:cctb2025@54.210.219.183:27017/cctbdb?authSource=cctbdb',
         }
     }
 }
-"""
+
 
 
 # Password validation
